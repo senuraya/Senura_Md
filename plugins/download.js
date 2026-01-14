@@ -1,12 +1,13 @@
 const { cmd } = require("../command");
 const axios = require("axios");
 const mimes = require("mime-types");
+const fs = require("fs");
 
 cmd(
   {
     pattern: "download",
     alias: ["direct", "dl"],
-    desc: "Download files with reactions and better naming",
+    desc: "Download files with dynamic caption",
     category: "download",
     filename: __filename,
   },
@@ -14,50 +15,42 @@ cmd(
     try {
       if (!q) return reply("🔗 කරුණාකර සෘජු ලින්ක් එකක් ලබා දෙන්න.");
 
-      const isUrl = /^(https?:\/\/[^\s]+)/i.test(q);
-      if (!isUrl) return reply("❌ මෙය වලංගු ලින්ක් එකක් නොවේ.");
-
-      // 1. Reaction එකක් එකතු කිරීම
       await bot.sendMessage(from, { react: { text: "⏳", key: mek.key } });
 
-      // Headers ලබා ගැනීම
       const response = await axios.head(q);
       const mimeType = response.headers["content-type"];
-      const fileSize = response.headers["content-length"];
+      const fileSize = (response.headers["content-length"] / (1024 * 1024)).toFixed(2);
 
-      if (fileSize > 2000 * 1024 * 1024) {
-        await bot.sendMessage(from, { react: { text: "❌", key: mek.key } });
-        return reply("❌ ගොනුව 2GB ට වඩා වැඩියි.");
-      }
-
-      // 2. File Extension එක නිවැරදිව හදාගැනීම
       let extension = mimes.extension(mimeType) || "bin";
       let fileName = q.split("/").pop().split("?")[0] || "file";
-      
-      // නමේ අගට extension එක නැත්නම් එකතු කිරීම
-      if (!fileName.endsWith(`.${extension}`)) {
-        fileName = `${fileName}.${extension}`;
+      if (!fileName.endsWith(`.${extension}`)) fileName = `${fileName}.${extension}`;
+
+      // කලින් සේව් කරපු Caption එක කියවීම (නැතිනම් default එකක් ගැනීම)
+      let customCaption = "✅ *Downloaded Successfully*";
+      if (fs.existsSync("./caption.txt")) {
+        customCaption = fs.readFileSync("./caption.txt", "utf8");
       }
 
-      // ෆයිල් එක යැවීම
+      // Tags වෙනුවට නියම දත්ත ආදේශ කිරීම
+      let finalCaption = customCaption
+        .replace(/{filename}/g, fileName)
+        .replace(/{size}/g, fileSize + " MB");
+
       await bot.sendMessage(
         from,
         {
           document: { url: q },
           mimetype: mimeType,
           fileName: fileName,
-          caption: `❤ 𝙎𝙚𝙣𝙪𝙧𝙖 𝙈𝘿 ❤\n> ❤🩵 𝙎𝙚𝙣𝙪𝙧𝙖 𝙈𝘿 🩵❤\n> `Developed by Mr. SENURA> GitHub Repository: github.com/MrSENURA/SENURA_MD_PANEL\n🅢🅔🅒🅡🅔🅣 🅜🅞🅥🅘🅔 🅒🅛🅤🅑 🅒🅘🅝🅔🅜🅐 🎦 \n\n⭕ Admin - Senura Sachinthana\n⭕ If There Is An Issue, Contact Us...`📂 *File:* ${fileName}\n⚖️ *Size:* ${(fileSize / (1024 * 1024)).toFixed(2)} MB`,
+          caption: finalCaption,
         },
         { quoted: mek }
       );
 
-      // 3. සාර්ථක වූ පසු Reaction එක වෙනස් කිරීම
       await bot.sendMessage(from, { react: { text: "✅", key: mek.key } });
 
     } catch (e) {
-      console.log("DOWNLOAD ERROR:", e);
-      await bot.sendMessage(from, { react: { text: "❌", key: mek.key } });
-      reply("❌ දෝෂයක් සිදු විය. ලින්ක් එක පරීක්ෂා කරන්න.");
+      reply("❌ දෝෂයක් සිදු විය.");
     }
   }
 );

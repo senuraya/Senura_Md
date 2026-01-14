@@ -46,7 +46,7 @@ cmd(
           document: { url: q },
           mimetype: mimeType,
           fileName: fileName,
-          caption: `✅ *Download Success*\n\n📂 *File:* ${fileName}\n⚖️ *Size:* ${(fileSize / (1024 * 1024)).toFixed(2)} MB`,
+          caption: `❤ 𝙎𝙚𝙣𝙪𝙧𝙖 𝙈𝘿 ❤\n> ❤🩵 𝙎𝙚𝙣𝙪𝙧𝙖 𝙈𝘿 🩵❤\n> `Developed by Mr. SENURA> GitHub Repository: github.com/MrSENURA/SENURA_MD_PANEL\n🅢🅔🅒🅡🅔🅣 🅜🅞🅥🅘🅔 🅒🅛🅤🅑 🅒🅘🅝🅔🅜🅐 🎦 \n\n⭕ Admin - Senura Sachinthana\n⭕ If There Is An Issue, Contact Us...`📂 *File:* ${fileName}\n⚖️ *Size:* ${(fileSize / (1024 * 1024)).toFixed(2)} MB`,
         },
         { quoted: mek }
       );
